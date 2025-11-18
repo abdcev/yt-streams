@@ -50,6 +50,13 @@
   },
   {
     "type": "channel",
+    "name": "Cartoon Network",
+    "slug": "carrtoon-network",
+    "id": "@cartoonnetworkturkiye",
+    "subfolder": "cocuk"
+  },
+  {
+    "type": "channel",
     "name": "Akit TV",
     "slug": "akit-tv",
     "id": "UCbaLyHJp6S9Lsj6oT9aJsQw",
