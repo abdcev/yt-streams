@@ -15,7 +15,6 @@ on:
 env:
   CONFIG_FILE: turkish.json
   OUTPUT_FOLDER: TR
-  ENDPOINT: https://p.abdcev.workers.dev   # <<< EKLEDİK
 
 jobs:
   update-streams:
@@ -40,6 +39,8 @@ jobs:
           pip install -r requirements.txt
 
       - name: Update streams
+        env:
+          ENDPOINT: ${{ secrets.ENDPOINT }}   # <<< TEK DOĞRU YER
         run: |
           python main.py ${{ env.CONFIG_FILE }} --folder ${{ env.OUTPUT_FOLDER }}
 
