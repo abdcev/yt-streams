@@ -36,7 +36,7 @@ import requests
 # =========================
 
 # Eski tek ENDPOINT desteği için default
-DEFAULT_ENDPOINT = os.environ.get('ENDPOINT', 'https://your-endpoint.com')
+DEFAULT_ENDPOINT = os.environ.get('ENDPOINT')
 
 # ENDPOINT1..ENDPOINT10 listesini oku
 ENDPOINTS = []
