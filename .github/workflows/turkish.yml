@@ -40,9 +40,15 @@ jobs:
           python -m pip install --upgrade pip
           pip install git+https://github.com/zinzied/cloudscraper.git
           pip install -r requirements.txt
+
+
       
       - name: Update streams
         env:
+          # Primary endpoint (main.py'nin "Primary endpoint" diye yazdığı)
+          ENDPOINT: ${{ secrets.ENDPOINT1 }}
+
+          # Eğer main.py ENDPOINT1..10’u da kullanıyorsa, bunlar kalsın
           ENDPOINT1: ${{ secrets.ENDPOINT1 }}
           ENDPOINT2: ${{ secrets.ENDPOINT2 }}
           ENDPOINT3: ${{ secrets.ENDPOINT3 }}
@@ -56,7 +62,7 @@ jobs:
         run: |
           python main.py ${{ env.CONFIG_FILE }} --folder ${{ env.OUTPUT_FOLDER }}
 
-      
+
       - name: List output files
         run: |
           echo "Contents of ${{ env.OUTPUT_FOLDER }}:"
