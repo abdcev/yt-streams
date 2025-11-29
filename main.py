@@ -649,27 +649,29 @@ def main():
     print(f"Retry delay: {RETRY_DELAY}s")
     print(f"Verbose: {VERBOSE}")
     print(f"Session type: {session_type}")
+    # Yeni log:
+    global MAX_CONCURRENCY
+    print(f"Max concurrency: {MAX_CONCURRENCY}")
     print("=" * 50)
     
     total_success = 0
     total_fail = 0
     error_summary = {}  # Track error types
     
-    # Process each config file
+    # Tüm config dosyalarındaki stream'leri tek bir listede toplayın
     all_streams = []
     for config_file in args.config_files:
         print(f"\n📄 Loading config: {config_file}")
         streams = load_config(config_file)
         all_streams.extend(streams)
+        
     total_streams = len(all_streams)
-        # Load configuration
-        print(f"\n🔥 Starting concurrent process for {total_streams} stream(s) (Max {MAX_CONCURRENCY} at once)...")
-        # Process each stream
-        for i, stream in enumerate(streams, 1):
-            slug = stream.get('slug', 'unknown')
-            print(f"\n[{i}/{len(streams)}] Processing: {slug}")
-            
-           with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_CONCURRENCY) as executor:
+    
+    # EŞ ZAMANLILIK BAŞLANGICI BURADA
+    print(f"\n🔥 Starting concurrent process for {total_streams} stream(s) (Max {MAX_CONCURRENCY} at once)...")
+    
+    # ThreadPoolExecutor ile eş zamanlı çalıştırma
+    with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_CONCURRENCY) as executor:
         # Tüm stream'leri işlemek için görevleri gönder
         future_to_stream = {
             executor.submit(process_stream_task, stream): stream for stream in all_streams
@@ -698,7 +700,7 @@ def main():
                 error_type = type(exc).__name__
                 error_summary[error_type] = error_summary.get(error_type, 0) + 1
                 print(f"  ✗ FAILED (Unhandled Exception: {exc})")
-    
+
     # Summary
     print("\n" + "=" * 50)
     print(f"Complete: {total_success} successful, {total_fail} failed")
