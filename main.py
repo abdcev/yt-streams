@@ -32,21 +32,7 @@ except ImportError:
 import requests
 
 # Configuration
-ENDPOINTS = [
-    'https://p.abdcev.workers.dev/1',
-    'https://p.abdcev.workers.dev/2',
-    'https://p.abdcev.workers.dev/3',
-    'https://p.abdcev.workers.dev/4',
-    'https://p.abdcev.workers.dev/5',
-    'https://p.abdcev.workers.dev/6',
-    'https://p.abdcev.workers.dev/7',
-    'https://p.abdcev.workers.dev/8',
-    'https://p.abdcev.workers.dev/9',
-    'https://p.abdcev.workers.dev/10',
-    'https://p.abdcev.workers.dev/11',
-    'https://p.abdcev.workers.dev/12',
-    'https://p.abdcev.workers.dev/13',
-]
+ENDPOINT = os.environ.get('ENDPOINT', 'https://your-endpoint.com')
 FOLDER_NAME = os.environ.get('FOLDER_NAME', 'streams')
 TIMEOUT = 30
 MAX_RETRIES = 3
@@ -282,41 +268,30 @@ def make_request(url, timeout, headers, cookies=None, referer=None):
 
 
 def fetch_stream_url_with_retry(stream_config):
-    """Fetch stream URL with retry logic, rotating endpoints on failure"""
+    """Fetch stream URL with retry logic"""
     slug = stream_config['slug']
     last_error_type = None
     
-    # Yeni eklenecek değişken
-    endpoint_index = 0
-    
-    # MAX_RETRIES + Worker sayısı kadar deneme yapıyoruz
-    max_attempts = MAX_RETRIES + len(ENDPOINTS) - 1 
-    
-    for attempt in range(1, max_attempts + 1): # Max deneme sayısını güncelledik
+    for attempt in range(1, MAX_RETRIES + 1):
         if attempt > 1:
-            # Sadece 1. denemeden sonra gecikme ekliyoruz
-            delay = RETRY_DELAY * (2 ** (attempt - 2))  
-            print(f"   → Retry {attempt}/{max_attempts} after {delay}s delay...")
+            delay = RETRY_DELAY * (2 ** (attempt - 2))  # Exponential backoff
+            print(f"  → Retry {attempt}/{MAX_RETRIES} after {delay}s delay...")
             time.sleep(delay)
-            
-            # ❗ Hata aldık, Worker'ı değiştiriyoruz
-            endpoint_index = (endpoint_index + 1) % len(ENDPOINTS)
-            
-        # fetch_stream_url fonksiyonunu yeni bir parametre ile çağır
-        result, error_type = fetch_stream_url(stream_config, endpoint_index, attempt) 
+        
+        result, error_type = fetch_stream_url(stream_config, attempt)
         if result is not None:
             return result, None
         
         last_error_type = error_type
-        if attempt < max_attempts:
-            print(f"   → Attempt {attempt} failed (Worker {endpoint_index+1} failed), will retry...")
-            
-    print(f"   ✗ All {max_attempts} attempts failed for {slug}")
+        if attempt < MAX_RETRIES:
+            print(f"  → Attempt {attempt} failed, will retry...")
+    
+    print(f"  ✗ All {MAX_RETRIES} attempts failed for {slug}")
     return None, last_error_type
 
 
-def fetch_stream_url(stream_config, endpoint_index, attempt_num=1):
-    """Fetch the YouTube stream m3u8 URL using the specified endpoint index"""
+def fetch_stream_url(stream_config, attempt_num=1):
+    """Fetch the YouTube stream m3u8 URL"""
     stream_type = stream_config.get('type', 'channel')
     stream_id = stream_config['id']
     slug = stream_config['slug']
@@ -330,13 +305,10 @@ def fetch_stream_url(stream_config, endpoint_index, attempt_num=1):
         print(f"✗ Unknown type '{stream_type}' for {slug}")
         return None, 'InvalidType'
     
-# ❗ Yeni: Hangi Worker'ı kullanacağımızı ENDPOINTS listesinden çekiyoruz
-    current_endpoint = ENDPOINTS[endpoint_index] 
-    
     # Build request URL
-    url = f"{current_endpoint}/yt.php?{query_param}={stream_id}"
+    url = f"{ENDPOINT}/yt.php?{query_param}={stream_id}"
     
-    print(f"   Fetching: {url} (Using Worker #{endpoint_index + 1})") # Worker bilgisini ekledik
+    print(f"  Fetching: {url}")
     
     try:
         # Prepare headers
@@ -582,8 +554,8 @@ Examples:
     
     parser.add_argument(
         '--endpoint',
-        default=ENDPOINTS[0], # <-- ENDPOINT yerine ENDPOINTS[0] kullanıldı
-        help=f'API endpoint URL (default: {ENDPOINTS[0]})' # <-- Burası da değiştirildi
+        default=ENDPOINT,
+        help=f'API endpoint URL (default: {ENDPOINT})'
     )
     
     parser.add_argument(
@@ -634,16 +606,18 @@ def main():
     args = parse_arguments()
     
     # Update globals with command line arguments
-    global FOLDER_NAME, TIMEOUT, MAX_RETRIES, RETRY_DELAY
+    global ENDPOINT, FOLDER_NAME, TIMEOUT, MAX_RETRIES, RETRY_DELAY
+    ENDPOINT = args.endpoint
     FOLDER_NAME = args.folder
     TIMEOUT = args.timeout
     MAX_RETRIES = args.retries
     RETRY_DELAY = args.retry_delay
+    VERBOSE = args.verbose
     
     print("=" * 50)
     print("YouTube Stream Updater (Improved)")
     print("=" * 50)
-    print(f"First Worker: {ENDPOINTS[0]} ({len(ENDPOINTS)} total Workers)")
+    print(f"Endpoint: {ENDPOINT}")
     print(f"Output folder: {FOLDER_NAME}")
     print(f"Config files: {', '.join(args.config_files)}")
     print(f"Timeout: {TIMEOUT}s")
