@@ -15,7 +15,6 @@ on:
 env:
   CONFIG_FILE: turkish.json
   OUTPUT_FOLDER: TR
-  ENDPOINT: https://p.abdcev.workers.dev
 
 jobs:
   update-streams:
