@@ -582,8 +582,8 @@ Examples:
     
     parser.add_argument(
         '--endpoint',
-        default=ENDPOINT,
-        help=f'API endpoint URL (default: {ENDPOINT})'
+        default=ENDPOINTS[0], # <-- ENDPOINT yerine ENDPOINTS[0] kullanıldı
+        help=f'API endpoint URL (default: {ENDPOINTS[0]})' # <-- Burası da değiştirildi
     )
     
     parser.add_argument(
