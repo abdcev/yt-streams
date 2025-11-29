@@ -634,7 +634,7 @@ def main():
     args = parse_arguments()
     
   # Update globals with command line arguments
-    global FOLDER_NAME, TIMEOUT, MAX_RETRIES, RETRY_DELAY # ENDPOINT çıkarıldı
+global FOLDER_NAME, TIMEOUT, MAX_RETRIES, RETRY_DELAY
     # ENDPOINT = args.endpoint # Worker'lar sabit listeye bağlı olduğu için bu satır silindi
     FOLDER_NAME = args.folder
     TIMEOUT = args.timeout
