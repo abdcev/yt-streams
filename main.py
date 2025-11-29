@@ -635,16 +635,14 @@ def main():
     
 # Update globals with command line arguments
     global FOLDER_NAME, TIMEOUT, MAX_RETRIES, RETRY_DELAY
-    # ENDPOINT = args.endpoint # Worker'lar sabit listeye bağlı olduğu için bu satır silindi
     FOLDER_NAME = args.folder
     TIMEOUT = args.timeout
     MAX_RETRIES = args.retries
     RETRY_DELAY = args.retry_delay
     
-print("=" * 50)
+    print("=" * 50)
     print("YouTube Stream Updater (Improved)")
     print("=" * 50)
-    # Artık endpoint'i listeden okuyup yazdırıyoruz
     print(f"First Worker: {ENDPOINTS[0]} ({len(ENDPOINTS)} total Workers)")
     print(f"Output folder: {FOLDER_NAME}")
     print(f"Config files: {', '.join(args.config_files)}")
