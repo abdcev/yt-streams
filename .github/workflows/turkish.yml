@@ -43,9 +43,19 @@ jobs:
       
       - name: Update streams
         env:
-          ENDPOINT: ${{ secrets.ENDPOINT }}
+          ENDPOINT1: ${{ secrets.ENDPOINT1 }}
+          ENDPOINT2: ${{ secrets.ENDPOINT2 }}
+          ENDPOINT3: ${{ secrets.ENDPOINT3 }}
+          ENDPOINT4: ${{ secrets.ENDPOINT4 }}
+          ENDPOINT5: ${{ secrets.ENDPOINT5 }}
+          ENDPOINT6: ${{ secrets.ENDPOINT6 }}
+          ENDPOINT7: ${{ secrets.ENDPOINT7 }}
+          ENDPOINT8: ${{ secrets.ENDPOINT8 }}
+          ENDPOINT9: ${{ secrets.ENDPOINT9 }}
+          ENDPOINT10: ${{ secrets.ENDPOINT10 }}
         run: |
           python main.py ${{ env.CONFIG_FILE }} --folder ${{ env.OUTPUT_FOLDER }}
+
       
       - name: List output files
         run: |
