@@ -633,13 +633,13 @@ def main():
     global VERBOSE
     args = parse_arguments()
     
-  # Update globals with command line arguments
-global FOLDER_NAME, TIMEOUT, MAX_RETRIES, RETRY_DELAY
-    # ENDPOINT = args.endpoint # Worker'lar sabit listeye bağlı olduğu için bu satır silindi
-    FOLDER_NAME = args.folder
-    TIMEOUT = args.timeout
-    MAX_RETRIES = args.retries
-    RETRY_DELAY = args.retry_delay
+# Update globals with command line arguments
+    global FOLDER_NAME, TIMEOUT, MAX_RETRIES, RETRY_DELAY
+    # ENDPOINT = args.endpoint # Worker'lar sabit listeye bağlı olduğu için bu satır silindi
+    FOLDER_NAME = args.folder
+    TIMEOUT = args.timeout
+    MAX_RETRIES = args.retries
+    RETRY_DELAY = args.retry_delay
     
 print("=" * 50)
     print("YouTube Stream Updater (Improved)")
