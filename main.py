@@ -13,7 +13,8 @@ import time
 import re
 from pathlib import Path
 from urllib.parse import urlencode, urlparse, parse_qs
-
+import concurrent.futures
+import random
 # Try to import cloudscraper first (best option)
 try:
     import cloudscraper
@@ -38,6 +39,7 @@ TIMEOUT = 30
 MAX_RETRIES = 3
 RETRY_DELAY = 2  # seconds
 VERBOSE = False
+MAX_CONCURRENCY = 10
 
 def create_session():
     """Create the best available HTTP session"""
@@ -313,13 +315,16 @@ def fetch_stream_url(stream_config, attempt_num=1):
     try:
         # Prepare headers
         headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
             'Accept': '*/*',
             'Accept-Language': 'en-US,en;q=0.9',
             'Accept-Encoding': 'gzip, deflate, br',
             'Connection': 'keep-alive',
             'Upgrade-Insecure-Requests': '1'
         }
+        
+        random_delay = random.uniform(0.5, 2.0)
+        print(f"  → Applying random human-like delay: {random_delay:.2f}s")
+        time.sleep(random_delay)
         
         print(f"  → Sending GET request (timeout={TIMEOUT}s, attempt={attempt_num})...")
         
@@ -599,6 +604,25 @@ Examples:
     
     return parser.parse_args()
 
+def process_stream_task(stream_config):
+    """Her bir stream için yapılacak iş (görev) - Eş zamanlı çalışacak fonksiyon"""
+    slug = stream_config.get('slug', 'unknown')
+    # print(f"\n[TASK] Processing: {slug}") # Bunu main döngüsüne taşıdık.
+    
+    m3u8_content, error_type = fetch_stream_url_with_retry(stream_config)
+    
+    if m3u8_content:
+        if save_stream(stream_config, m3u8_content):
+            # print(f"[{slug}] SUCCESS")
+            return 'success', slug, None
+        else:
+            delete_old_file(stream_config)
+            return 'fail', slug, 'SaveError'
+    else:
+        delete_old_file(stream_config)
+        return 'fail', slug, error_type
+
+
 
 def main():
     """Main execution function"""
@@ -632,37 +656,48 @@ def main():
     error_summary = {}  # Track error types
     
     # Process each config file
+    all_streams = []
     for config_file in args.config_files:
-        print(f"\n📄 Processing config: {config_file}")
-        print("-" * 50)
-        
-        # Load configuration
+        print(f"\n📄 Loading config: {config_file}")
         streams = load_config(config_file)
-        
+        all_streams.extend(streams)
+    total_streams = len(all_streams)
+        # Load configuration
+        print(f"\n🔥 Starting concurrent process for {total_streams} stream(s) (Max {MAX_CONCURRENCY} at once)...")
         # Process each stream
         for i, stream in enumerate(streams, 1):
             slug = stream.get('slug', 'unknown')
             print(f"\n[{i}/{len(streams)}] Processing: {slug}")
             
-            # Fetch stream URL with retry
-            m3u8_content, error_type = fetch_stream_url_with_retry(stream)
+           with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_CONCURRENCY) as executor:
+        # Tüm stream'leri işlemek için görevleri gönder
+        future_to_stream = {
+            executor.submit(process_stream_task, stream): stream for stream in all_streams
+        }
+        
+        # Sonuçları al ve işle
+        for i, future in enumerate(concurrent.futures.as_completed(future_to_stream), 1):
+            stream = future_to_stream[future]
+            slug = stream.get('slug', 'unknown')
             
-            if m3u8_content:
-                # Save to file
-                if save_stream(stream, m3u8_content):
+            print(f"\n[{i}/{total_streams}] Result for: {slug}")
+            
+            try:
+                status, stream_slug, error_type = future.result()
+                
+                if status == 'success':
                     total_success += 1
                 else:
                     total_fail += 1
-                    # Delete old file on save error
-                    delete_old_file(stream)
-                    error_summary['SaveError'] = error_summary.get('SaveError', 0) + 1
-            else:
+                    if error_type:
+                        error_summary[error_type] = error_summary.get(error_type, 0) + 1
+                    print(f"  ✗ FAILED (Error: {error_type})")
+                    
+            except Exception as exc:
                 total_fail += 1
-                # Delete old file on fetch error
-                delete_old_file(stream)
-                # Track error type
-                if error_type:
-                    error_summary[error_type] = error_summary.get(error_type, 0) + 1
+                error_type = type(exc).__name__
+                error_summary[error_type] = error_summary.get(error_type, 0) + 1
+                print(f"  ✗ FAILED (Unhandled Exception: {exc})")
     
     # Summary
     print("\n" + "=" * 50)
