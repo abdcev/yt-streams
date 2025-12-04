@@ -538,6 +538,72 @@ def delete_old_file(stream_config):
 
     return False
 
+def select_best_variant(m3u8_content):
+    """
+    Master m3u8 içinden sadece EN YÜKSEK kalite varyantı seçer.
+    Önce BANDWIDTH'e, o yoksa RESOLUTION'a göre karar verir.
+    Eğer master playlist değilse (varyant yoksa) orijinali döner.
+    """
+    lines = m3u8_content.split('\n')
+
+    stream_blocks = []
+    current_block = []
+
+    for line in lines:
+        if line.startswith('#EXT-X-STREAM-INF'):
+            # Yeni bir varyant bloğu başlıyor
+            if current_block:
+                stream_blocks.append(current_block)
+            current_block = [line]
+        elif current_block:
+            current_block.append(line)
+            # Varyant URL satırı .m3u8 ile biter, burada bloğu tamamlıyoruz
+            if line.strip().endswith('.m3u8'):
+                stream_blocks.append(current_block)
+                current_block = []
+
+    # Son blok eklenmemişse ekle
+    if current_block:
+        stream_blocks.append(current_block)
+
+    # Eğer hiç varyant yoksa (demek ki bu zaten media playlist), dokunmadan geri ver
+    if not stream_blocks:
+        return m3u8_content
+
+    best_block = None
+    best_score = -1
+
+    for block in stream_blocks:
+        info_line = block[0]  # #EXT-X-STREAM-INF satırı
+
+        # Önce BANDWIDTH bak
+        bw_match = re.search(r'BANDWIDTH=(\d+)', info_line)
+        if bw_match:
+            score = int(bw_match.group(1))
+        else:
+            # BANDWIDTH yoksa RESOLUTION'a göre puan ver
+            res_match = re.search(r'RESOLUTION=(\d+)x(\d+)', info_line)
+            if res_match:
+                w = int(res_match.group(1))
+                h = int(res_match.group(2))
+                score = w * h
+            else:
+                score = 0
+
+        if score > best_score:
+            best_score = score
+            best_block = block
+
+    # Güvenlik: yine de hiçbir şey bulamadıysak orijinali döndür
+    if not best_block:
+        return m3u8_content
+
+    # Yeni playlist: sadece en iyi varyant
+    result_lines = ['#EXTM3U']
+    result_lines.extend(best_block)
+
+    return '\n'.join(result_lines)
+
 
 def save_stream(stream_config, m3u8_content):
     """Save m3u8 content to file"""
@@ -551,17 +617,22 @@ def save_stream(stream_config, m3u8_content):
     output_dir.mkdir(parents=True, exist_ok=True)
 
     # Reverse quality order
-    reversed_content = reverse_hls_quality(m3u8_content)
+    # Önce master playlist içinden sadece EN YÜKSEK kaliteyi seç
+    best_only = select_best_variant(m3u8_content)
+    
+    # İstersen hala sırayı ters çevirebilirsin (tek varyantta fark etmez ama zararı yok)
+    reversed_content = reverse_hls_quality(best_only)
 
-    # Write to file
-    try:
-        with open(output_file, 'w') as f:
-            f.write(reversed_content)
-        print(f"  ✓ Saved: {output_file}")
-        return True
-    except Exception as e:
-        print(f"  ✗ Error saving {output_file}: {e}")
-        return False
+# Write to file
+try:
+    with open(output_file, 'w') as f:
+        f.write(reversed_content)
+    print(f"  ✓ Saved: {output_file}")
+    return True
+except Exception as e:
+    print(f"  ✗ Error saving {output_file}: {e}")
+    return False
+
 
 
 def parse_arguments():
