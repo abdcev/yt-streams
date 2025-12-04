@@ -624,14 +624,14 @@ def save_stream(stream_config, m3u8_content):
     reversed_content = reverse_hls_quality(best_only)
 
 # Write to file
-try:
-    with open(output_file, 'w') as f:
-        f.write(reversed_content)
-    print(f"  ✓ Saved: {output_file}")
-    return True
-except Exception as e:
-    print(f"  ✗ Error saving {output_file}: {e}")
-    return False
+    try:
+        with open(output_file, 'w') as f:
+            f.write(reversed_content)
+        print(f"  ✓ Saved: {output_file}")
+        return True
+    except Exception as e:
+        print(f"  ✗ Error saving {output_file}: {e}")
+        return False
 
 
 
