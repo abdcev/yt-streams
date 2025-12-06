@@ -138,5 +138,26 @@
     "slug": "tgrthaber",
     "id": "UCzgrZ-CndOoylh2_e72nSBQ",
     "subfolder": "haber"
+  },
+  {
+    "type": "channel",
+    "name": "Arzu Film",
+    "slug": "arzufilm",
+    "id": "UCUALYmnkEmx8vlxIbpr2gmw",
+    "subfolder": "haber"
+  },
+  {
+    "type": "channel",
+    "name": "MR. Bean",
+    "slug": "mrbean",
+    "id": "UCkAGrHCLFmlK3H2kd6isipg",
+    "subfolder": "haber"
+  },
+  {
+    "type": "channel",
+    "name": "Mekke Canlı",
+    "slug": "mekkecanlı",
+    "id": "UCfBw_uwZb_oFLyVsjWk6owQ",
+    "subfolder": "dini"
   }
 ]
