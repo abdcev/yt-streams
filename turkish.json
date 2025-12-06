@@ -135,8 +135,8 @@
   {
     "type": "channel",
     "name": "TGRT Haber",
-    "slug": "haber",
+    "slug": "tgrthaber",
     "id": "UCzgrZ-CndOoylh2_e72nSBQ",
-    "subfolder": "spor"
+    "subfolder": "haber"
   }
 ]
