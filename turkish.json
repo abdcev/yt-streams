@@ -131,5 +131,18 @@
     "slug": "aspor",
     "id": "UCJElRTCNEmLemgirqvsW63Q",
     "subfolder": "spor"
-  }
+  },
+  {
+    "type": "channel",
+    "name": "TRT Haber",
+    "slug": "trthaber",
+    "id": "UCBgTP2LOFVPmq15W-RH-WXA",
+    "subfolder": "haber"
+  },
+  {
+    "type": "channel",
+    "name": "TGRT Haber",
+    "slug": "haber",
+    "id": "UCzgrZ-CndOoylh2_e72nSBQ",
+    "subfolder": "spor"
 ]
