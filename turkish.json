@@ -99,6 +99,13 @@
   },
   {
     "type": "channel",
+    "name": "Semerkand TV",
+    "slug": "semerkandtv",
+    "id": "UCy4NY-cswicIclx2XKqe5Kg",
+    "subfolder": "dini"
+  },
+  {
+    "type": "channel",
     "name": "Leyla ile Mecnun",
     "slug": "leylailemecnun",
     "id": "UCmODRwQLSOr5GEG77Uf_zpQ",
