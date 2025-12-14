@@ -99,9 +99,9 @@
   },
   {
     "type": "channel",
-    "name": "Avrupa Yakası",
-    "slug": "avrupa-yakasi",
-    "id": "UCgc3VJYdM_R8oKGRuXxUbKQ",
+    "name": "Leyla ile Mecnun",
+    "slug": "leylailemecnun",
+    "id": "UCmODRwQLSOr5GEG77Uf_zpQ",
     "subfolder": "dizi"
   },
   {
@@ -148,10 +148,10 @@
   },
   {
     "type": "channel",
-    "name": "MR. Bean",
-    "slug": "mrbean",
-    "id": "UCkAGrHCLFmlK3H2kd6isipg",
-    "subfolder": "dizi"
+    "name": "NTV",
+    "slug": "ntv",
+    "id": "UC9TDTjbOjFB9jADmPhSAPsw",
+    "subfolder": "haber"
   },
   {
     "type": "channel",
