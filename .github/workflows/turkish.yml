@@ -2,7 +2,7 @@ name: Update Streams - Live
 
 on:
   schedule:
-    - cron: '0 */12 * * *'   # 12 saatte 1 yeter (wrapper statik)
+    - cron: '0 */12 * * *'
   workflow_dispatch:
   push:
     branches: [ main ]
@@ -32,7 +32,7 @@ jobs:
 
       - name: Update wrapper playlists
         env:
-          ENDPOINT:  ${{ secrets.ENDPOINT1 }}
+          ENDPOINT: ${{ secrets.ENDPOINT1 }}
           ENDPOINT1: ${{ secrets.ENDPOINT1 }}
           ENDPOINT2: ${{ secrets.ENDPOINT2 }}
           ENDPOINT3: ${{ secrets.ENDPOINT3 }}
@@ -42,7 +42,7 @@ jobs:
           ENDPOINT7: ${{ secrets.ENDPOINT7 }}
           ENDPOINT8: ${{ secrets.ENDPOINT8 }}
           ENDPOINT9: ${{ secrets.ENDPOINT9 }}
-          ENDPOINT10:${{ secrets.ENDPOINT10 }}
+          ENDPOINT10: ${{ secrets.ENDPOINT10 }}
         run: |
           python main.py ${{ env.CONFIG_FILE }} --folder ${{ env.OUTPUT_FOLDER }}
 
