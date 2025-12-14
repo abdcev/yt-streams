@@ -134,6 +134,13 @@
   },
   {
     "type": "channel",
+    "name": "CNN TÜRK",
+    "slug": "cnnturk",
+    "id": "UCV6zcRug6Hqp1UX_FdyUeBg",
+    "subfolder": "haber"
+  },
+  {
+    "type": "channel",
     "name": "TGRT Haber",
     "slug": "tgrthaber",
     "id": "UCzgrZ-CndOoylh2_e72nSBQ",
