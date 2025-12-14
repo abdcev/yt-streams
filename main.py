@@ -781,30 +781,31 @@ def main():
 
             # Fetch stream URL with retry (ve çoklu endpoint fallback)
             m3u8_content, error_type = fetch_stream_url_with_retry(stream)
-
+            
             if m3u8_content:
-            ok_normal = save_stream(stream, m3u8_content)
-            ok_best = save_best_stream(stream, m3u8_content)
-        
-            if ok_normal and ok_best:
-                total_success += 1
+                ok_normal = save_stream(stream, m3u8_content)
+                ok_best = save_best_stream(stream, m3u8_content)
+            
+                if ok_normal and ok_best:
+                    total_success += 1
+                else:
+                    total_fail += 1
+            
+                    if not ok_normal:
+                        delete_old_file(stream)
+                        error_summary['SaveError'] = error_summary.get('SaveError', 0) + 1
+            
+                    if not ok_best:
+                        error_summary['BestSaveError'] = error_summary.get('BestSaveError', 0) + 1
+            
             else:
                 total_fail += 1
-        
-                if not ok_normal:
-                    delete_old_file(stream)
-                    error_summary['SaveError'] = error_summary.get('SaveError', 0) + 1
-        
-                if not ok_best:
-                    error_summary['BestSaveError'] = error_summary.get('BestSaveError', 0) + 1
-        
-                    else:
-                        total_fail += 1
-                        # Delete old file on fetch error
-                        delete_old_file(stream)
-                        # Track error type
-                        if error_type:
-                            error_summary[error_type] = error_summary.get(error_type, 0) + 1
+                # Delete old file on fetch error
+                delete_old_file(stream)
+                # Track error type
+                if error_type:
+                    error_summary[error_type] = error_summary.get(error_type, 0) + 1
+            
 
     # Summary
     print("\n" + "=" * 50)
