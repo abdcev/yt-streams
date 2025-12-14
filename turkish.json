@@ -155,13 +155,6 @@
   },
   {
     "type": "channel",
-    "name": "STAR TV",
-    "slug": "startv",
-    "id": "UCsFINj3y7SjBaeUxiSdRjlA",
-    "subfolder": "yerel"
-  },
-  {
-    "type": "channel",
     "name": "Mekke Canlı",
     "slug": "mekkecanlı",
     "id": "UCfBw_uwZb_oFLyVsjWk6owQ",
