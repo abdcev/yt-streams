@@ -127,6 +127,13 @@
   },
   {
     "type": "channel",
+    "name": "TRT Spor",
+    "slug": "trtspor",
+    "id": "UCfYNqluOf8EbQkL44otydMw",
+    "subfolder": "spor"
+  },
+  {
+    "type": "channel",
     "name": "TRT Haber",
     "slug": "trthaber",
     "id": "UCBgTP2LOFVPmq15W-RH-WXA",
