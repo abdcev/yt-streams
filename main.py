@@ -55,6 +55,96 @@ MAX_RETRIES = 3
 RETRY_DELAY = 2  # seconds
 VERBOSE = False
 
+def parse_master_variants(m3u8_content):
+    """
+    Master playlist içindeki varyantları çıkarır.
+    Her varyant: {'inf': line, 'uri': line, 'bandwidth': int, 'width': int, 'height': int}
+    """
+    lines = [l.strip() for l in m3u8_content.splitlines() if l.strip()]
+    variants = []
+    i = 0
+
+    while i < len(lines):
+        line = lines[i]
+        if line.startswith("#EXT-X-STREAM-INF:"):
+            inf = line
+            uri = None
+            if i + 1 < len(lines) and not lines[i + 1].startswith("#"):
+                uri = lines[i + 1]
+
+            bw = None
+            m = re.search(r'BANDWIDTH=(\d+)', inf)
+            if m:
+                bw = int(m.group(1))
+
+            w = h = None
+            m = re.search(r'RESOLUTION=(\d+)x(\d+)', inf)
+            if m:
+                w, h = int(m.group(1)), int(m.group(2))
+
+            variants.append({
+                "inf": inf,
+                "uri": uri,
+                "bandwidth": bw if bw is not None else -1,
+                "width": w if w is not None else -1,
+                "height": h if h is not None else -1,
+            })
+            i += 2
+            continue
+        i += 1
+
+    return variants
+
+
+def build_best_master_playlist(m3u8_content):
+    """
+    Master playlist ise en yüksek kalite varyantını seçip tek varyantlı master döner.
+    Master değilse (media playlist) aynen döner.
+    """
+    if "#EXT-X-STREAM-INF" not in m3u8_content:
+        # Media playlist (tek kalite) ise aynen kopyala
+        return m3u8_content
+
+    variants = parse_master_variants(m3u8_content)
+    variants = [v for v in variants if v["uri"]]  # uri yoksa alma
+    if not variants:
+        return m3u8_content
+
+    # Öncelik: BANDWIDTH, sonra çözünürlük alanı
+    best = max(variants, key=lambda v: (v["bandwidth"], v["width"] * v["height"]))
+    return "#EXTM3U\n" + best["inf"] + "\n" + best["uri"] + "\n"
+
+
+def get_best_output_path(stream_config):
+    """Get the output file path for BEST variant of a stream"""
+    slug = stream_config['slug']
+    subfolder = stream_config.get('subfolder', '')
+
+    base_dir = Path(FOLDER_NAME) / "best"
+    if subfolder:
+        output_dir = base_dir / subfolder
+    else:
+        output_dir = base_dir
+
+    return output_dir / f"{slug}.m3u8"
+
+def save_best_stream(stream_config, m3u8_content):
+    """Save ONLY best quality variant to streams/best/..."""
+    output_file = get_best_output_path(stream_config)
+    output_dir = output_file.parent
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    best_content = build_best_master_playlist(m3u8_content)
+
+    try:
+        with open(output_file, 'w') as f:
+            f.write(best_content)
+        print(f"  ✓ Saved BEST: {output_file}")
+        return True
+    except Exception as e:
+        print(f"  ✗ Error saving BEST {output_file}: {e}")
+        return False
+
 
 def create_session():
     """Create the best available HTTP session"""
@@ -693,21 +783,28 @@ def main():
             m3u8_content, error_type = fetch_stream_url_with_retry(stream)
 
             if m3u8_content:
-                # Save to file
-                if save_stream(stream, m3u8_content):
-                    total_success += 1
-                else:
-                    total_fail += 1
-                    # Delete old file on save error
-                    delete_old_file(stream)
-                    error_summary['SaveError'] = error_summary.get('SaveError', 0) + 1
+            ok_normal = save_stream(stream, m3u8_content)
+            ok_best = save_best_stream(stream, m3u8_content)
+        
+            if ok_normal and ok_best:
+                total_success += 1
             else:
                 total_fail += 1
-                # Delete old file on fetch error
-                delete_old_file(stream)
-                # Track error type
-                if error_type:
-                    error_summary[error_type] = error_summary.get(error_type, 0) + 1
+        
+                if not ok_normal:
+                    delete_old_file(stream)
+                    error_summary['SaveError'] = error_summary.get('SaveError', 0) + 1
+        
+                if not ok_best:
+                    error_summary['BestSaveError'] = error_summary.get('BestSaveError', 0) + 1
+        
+                    else:
+                        total_fail += 1
+                        # Delete old file on fetch error
+                        delete_old_file(stream)
+                        # Track error type
+                        if error_type:
+                            error_summary[error_type] = error_summary.get(error_type, 0) + 1
 
     # Summary
     print("\n" + "=" * 50)
