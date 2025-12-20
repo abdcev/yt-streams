@@ -1,6 +1,13 @@
 [
   {
     "type": "channel",
+    "name": "KRAL POP",
+    "slug": "kralpop",
+    "id": "UCEAW_kmPVjxTC50vuLyKOQA",
+    "subfolder": "muzik"
+  },
+  {
+    "type": "channel",
     "name": "24 TV",
     "slug": "24tv",
     "id": "UCN7VYCsI4Lx1-J4_BtjoWUA",
