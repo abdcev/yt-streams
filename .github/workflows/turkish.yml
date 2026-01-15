@@ -3,7 +3,7 @@ name: Update Streams - Live
 on:
   schedule:
     # Run every 3 hours (more frequent for live streams)
-    - cron: '0 */3 * * *'
+    - cron: '0 */1 * * *'
   
   workflow_dispatch:  # Allow manual triggering
   
